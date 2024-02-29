@@ -11,8 +11,8 @@ class DataReader:
         
     
     def read_data(self):
-        if self.data_source == "csv":
-            return self.read_csv()
+        if self.data_source == "unify" or self.data_source == "ld":
+            return self.read_unify_excel(self)
         
     def read_unify_excel(self):
         df = pd.read_excel(self.path)
@@ -22,7 +22,7 @@ class DataReader:
         df[Columns.METRIC] = "KEUR"
     
         df.drop(columns=set(df.columns) - set(vars(Columns).values()), inplace=True, errors="ignore")
-        return df
+        self.data = df
 
 def parse_ld_date(date_str):
     setlocale(LC_ALL, "de_DE")
