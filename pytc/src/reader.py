@@ -2,11 +2,12 @@ from datetime import datetime
 import pandas as pd
 from locale import setlocale, LC_ALL
 
-from config import Columns
+from config import Columns, ColumnMap, PATH_TO_DATA
 
 class DataReader:
     def __init__(self, data_source):
         self.data_source = data_source
+        self.path = PATH_TO_DATA
         
     
     def read_data(self):
