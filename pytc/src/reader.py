@@ -4,7 +4,6 @@ from locale import setlocale, LC_ALL
 
 from config import Columns
 
-
 class DataReader:
     def __init__(self, data_source):
         self.data_source = data_source
