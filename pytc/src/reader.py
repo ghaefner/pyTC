@@ -1,9 +1,9 @@
 from datetime import datetime
 import pandas as pd
 from locale import setlocale, LC_ALL
-import re
 
 from config import Columns
+
 
 class DataReader:
     def __init__(self, data_source):
@@ -29,11 +29,8 @@ class DataReader:
         return df
         
 
-def parse_ld_date(date, locale='de_DE'):
-    setlocale(LC_ALL, locale=locale)
-    date = re.sub(r"\[W \d\d-\d\d]", "", date)
-    date = re.sub(r"MAT |YTD ", "", date)
-    date = date.replace("Mär", "Mrz")
-    date = date.replace(",","")
-    date = datetime.strptime(date, "%b %y")
-    return date
+def parse_ld_date(date_str):
+    setlocale(LC_ALL, "de_DE")
+    date_str = date_str.split("[")[0].strip()
+    date_str = date_str.replace("Mär", "Mrz")
+    return datetime.strptime(date_str, "%b, %y")
