@@ -14,19 +14,14 @@ class DataReader:
             return self.read_csv()
         
     def read_unify_excel(self):
-        df = pd.read_excel("your_file_path.xlsx")
+        df = pd.read_excel(self.path)
 
         df[Columns.DATE] = df["Time"].apply(parse_ld_date)
-
-        # df["Time"].apply(lambda x: datetime.strptime(x.split("[")[0].strip(), "%b, %y"))
-
-        # df = df.pivot_table(index=["date", "Geography", "Product", "MARKE"], columns="Metric", values="Verkauf 1.000 Euro").reset_index()
-
-        # Rename the columns
-        # df.columns = ["date", "region", "market", "product", "metric", "value"]
-
+        df.rename(columns=ColumnMap.LD, inplace=True)
+        df[Columns.METRIC] = "KEUR"
+    
+        df.drop(columns=set(df.columns) - set(vars(Columns).values()), inplace=True, errors="ignore")
         return df
-        
 
 def parse_ld_date(date_str):
     setlocale(LC_ALL, "de_DE")
