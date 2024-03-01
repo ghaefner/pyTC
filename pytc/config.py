@@ -1,4 +1,6 @@
-PATH_TO_DATA ="pytc/data/Example_Unify.xlsx"
+
+class Config:
+    PATH_TO_DATA ="pytc/data/Example_Unify.xlsx"
 
 
 class Columns:
