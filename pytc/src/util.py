@@ -25,3 +25,12 @@ def drop_zero(df):
  
 def list_intersection(list1, list2):
     return [value for value in list1 if value in list2]
+
+def select_columns_if_exist(df, cols):
+    return df.loc[:, df.columns.isin(cols)]
+ 
+def purge_path(path, extension='.csv'):
+    for file in [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]:
+        if file.endswith(extension):
+            os.remove(os.path.join(path, file))
+ 
