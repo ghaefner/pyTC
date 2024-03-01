@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from reader import Reader
 from typing import Callable, List
+import logging as log
+from time import perf_counter
 
 @dataclass
 class Task:
@@ -14,5 +16,17 @@ class Model:
     name: str
     name_long: str
     reader: Reader
-    task: List[Task]
+    tasks: List[Task]
     column_map: dict = None
+
+    def run(self):
+        start = perf_counter()
+        log.info(f"[I] Loading {self.name_long} data sequentially.")
+        for task in self.tasks:
+            self.run_task(task)
+        log.info(
+            f"[I] Finished {self.name_long} data in {perf_counter() - start:0.2f} seconds."
+        )
+
+    def run_task(self, taks):
+        pass
