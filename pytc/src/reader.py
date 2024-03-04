@@ -3,7 +3,7 @@ import pandas as pd
 from locale import setlocale, LC_ALL
 from abc import ABC, abstractmethod
 
-from config import Columns, ColumnMap, Config
+from pytc.config import Columns, ColumnMap, Config
 
 class Reader(ABC):
     @abstractmethod
