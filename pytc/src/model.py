@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from reader import Reader
-from writer import Writer
+from pytc.src.reader import Reader
+from pytc.src.writer import Writer
 from typing import Callable, List
 import logging as log
 from time import perf_counter
@@ -40,4 +40,4 @@ class Model:
             log.info(
                 f"[I] Transformed {task.table} {idx + 1} in {perf_counter() - start:0.2f} seconds."
             )
-            self.writer(data, task.table)
+            # self.writer(data, task.table)
