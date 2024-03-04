@@ -17,7 +17,7 @@ class Model:
     name: str
     name_long: str
     reader: Reader
-    write: Writer
+    writer: Writer
     tasks: List[Task]
     column_map: dict = None
 
