@@ -33,11 +33,16 @@ class Model:
     def run_task(self, task):
         log.info(f"Running {task.table}")
         
-        for idx, data in enumerate(self.reader.read(task.source)):
+        for idx, data in enumerate(self.reader.read()):
             start = perf_counter()
             log.info(f"[I] Transforming {task.table} {idx + 1}.")
             data = task.func(data)
             log.info(
                 f"[I] Transformed {task.table} {idx + 1} in {perf_counter() - start:0.2f} seconds."
             )
-            # self.writer(data, task.table)
+            self.writer.write(data, task.table)
+
+
+
+def dummy(df):
+    return df
