@@ -2,8 +2,11 @@ from dataclasses import dataclass
 from pytc.src.reader import Reader
 from pytc.src.writer import Writer
 from typing import Callable, List
-import logging as log
+import logging
 from time import perf_counter
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 @dataclass
 class Task:
@@ -23,22 +26,22 @@ class Model:
 
     def run(self):
         start = perf_counter()
-        log.info(f"[I] Loading {self.name_long} data sequentially.")
+        logging.info(f"Loading {self.name_long} data sequentially.")
         for task in self.tasks:
             self.run_task(task)
-        log.info(
-            f"[I] Finished {self.name_long} data in {perf_counter() - start:0.2f} seconds."
+        logging.info(
+            f"Finished {self.name_long} data in {perf_counter() - start:0.2f} seconds."
         )
 
     def run_task(self, task):
-        log.info(f"Running {task.table}")
+        logging.info(f"Running {task.table}")
         
         for idx, data in enumerate(self.reader.read()):
             start = perf_counter()
-            log.info(f"[I] Transforming {task.table} {idx + 1}.")
+            logging.info(f"Transforming {task.table} {idx + 1}.")
             data = task.func(data)
-            log.info(
-               f"[I] Transformed {task.table} {idx + 1} in {perf_counter() - start:0.2f} seconds."
+            logging.info(
+               f"Transformed {task.table} {idx + 1} in {perf_counter() - start:0.2f} seconds."
             )
             self.writer.write(data, task.table)
 
