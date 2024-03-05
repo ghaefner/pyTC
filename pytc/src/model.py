@@ -38,7 +38,7 @@ class Model:
             log.info(f"[I] Transforming {task.table} {idx + 1}.")
             data = task.func(data)
             log.info(
-                f"[I] Transformed {task.table} {idx + 1} in {perf_counter() - start:0.2f} seconds."
+               f"[I] Transformed {task.table} {idx + 1} in {perf_counter() - start:0.2f} seconds."
             )
             self.writer.write(data, task.table)
 
