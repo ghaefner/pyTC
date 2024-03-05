@@ -1,5 +1,6 @@
 
 class Config:
+    # TODO (later): add main path for data and subdirectories for different readers (Unify, dm, etc.)
     PATH_TO_DATA ="pytc/data/Example_Unify.xlsx"
 
 
