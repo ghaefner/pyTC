@@ -33,3 +33,15 @@ class UnifyReader(Reader):
         date_str = date_str.split("[")[0].strip()
         date_str = date_str.replace("Mär", "Mrz")
         return datetime.strptime(date_str, "%b, %y")
+    
+
+class PTRReader(Reader):
+    def __init__(self, config=Config):
+        self.file_path = config.PATH_TO_DATA
+
+    def read(self):
+        log.info(f"Reading file {self.file_path}.")
+
+        df = pd.read_excel(self.file_path, skiprows=4)
+
+        yield df
