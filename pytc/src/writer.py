@@ -3,6 +3,7 @@ from time import perf_counter
 import logging as log
 import os
 import pandas as pd
+from pytc.config import Config
 
 class Writer(ABC):
     @abstractmethod
@@ -11,8 +12,8 @@ class Writer(ABC):
     
 
 class CsvWriter(Writer):
-    def __init__(self, file_path, mode="a"):
-        self.file_path = file_path
+    def __init__(self, config=Config, mode="a"):
+        self.file_path = config.PATH_TO_OUTPUT
         self.counter = 0
         self.mode = mode
 
