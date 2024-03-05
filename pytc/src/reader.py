@@ -2,6 +2,7 @@ from datetime import datetime
 import pandas as pd
 from locale import setlocale, LC_ALL
 from abc import ABC, abstractmethod
+import logging as log
 
 from pytc.config import Columns, ColumnMap, Config
 
@@ -16,8 +17,9 @@ class UnifyReader(Reader):
         self.file_path = self.config.PATH_TO_DATA
     
     def read(self):
-        df = pd.read_excel(self.file_path)
+        log.info(f"Reading file {self.file_path}.")
 
+        df = pd.read_excel(self.file_path)
         df[Columns.DATE] = df["Time"].apply(self.parse_ld_date)
         df.rename(columns=ColumnMap.LD, inplace=True)
         df[Columns.METRIC] = "KEUR"
@@ -26,7 +28,7 @@ class UnifyReader(Reader):
         
         yield df
 
-    def parse_ld_date(date_str):
+    def parse_ld_date(self, date_str):
         setlocale(LC_ALL, "de_DE")
         date_str = date_str.split("[")[0].strip()
         date_str = date_str.replace("Mär", "Mrz")
