@@ -83,6 +83,7 @@ Pipfile
 
 # data
 pytc/data/*
+pytc/output/*
 
 # venv
 .venv
