@@ -47,29 +47,30 @@ class PTRReader(Reader):
         # Extract market
         selected_market = sheet["A2"].value.split(" = ")[1].strip()
 
-        df = pd.read_excel(self.file_path)
-        df = self.parse_cha_data(df)
+        df = pd.read_excel(self.file_path, skiprows=5)
+        df.pipe(parse_cha_data)
         df = apply_column_map(df, ColumnMap.PTR_REGIO)
         df[Columns.MARKET] = selected_market
-        df[Columns.DATE] = df[Columns.DATE].apply(self.parse_cha_data)
-        df[Columns.REGION] = df[Columns.REGION].apply(self.parse_ptr_regions)
+        df[Columns.DATE] = df[Columns.DATE].apply(parse_cha_date)
+        df[Columns.REGION] = df[Columns.REGION].apply(parse_ptr_regions)
 
         yield df[Columns.ALL]
 
-    def parse_cha_data(data):
-        return(
-            data.pipe(skip_incomplete_rows)
-            .pipe(use_first_row_as_header)
-        )
 
-    def parse_cha_date(date_str):
-        setlocale(LC_ALL, "de_DE")
-        if "MAT" in date_str or "YTD":
-            return datetime.strptime(date_str[4:], "%m/%y")
-        else:
-            return datetime.strptime(date_str, "%b %y")
+def parse_cha_data(data):
+    return(
+        data.pipe(skip_incomplete_rows)
+        .pipe(use_first_row_as_header)
+    )
+
+def parse_cha_date(self, date_str):
+    setlocale(LC_ALL, "de_DE")
+    if "MAT" in date_str or "YTD":
+        return datetime.strptime(date_str[4:], "%m/%y")
+    else:
+        return datetime.strptime(date_str, "%b %y")
 
     
-    def parse_ptr_regions(subregion_int):
-        region_int = ( subregion_int // 100 )*100 + (subregion_int % 10)
-        return "Geb_" + str(region_int)
+def parse_ptr_regions(self,subregion_int):
+    region_int = ( subregion_int // 100 )*100 + (subregion_int % 10)
+    return "Geb_" + str(region_int)
