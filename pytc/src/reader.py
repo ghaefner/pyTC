@@ -22,11 +22,10 @@ class UnifyReader(Reader):
         log.info(f"Reading file {self.file_path}.")
 
         df = pd.read_excel(self.file_path)
-        df[Columns.DATE] = df[Columns.DATE].apply(self.parse_ld_date)
         df = apply_column_map(df, ColumnMap.LD)
-        df.drop(columns=set(df.columns) - set(vars(Columns).values()), inplace=True, errors="ignore")
-        
-        yield df
+        df[Columns.DATE] = df[Columns.DATE].apply(self.parse_ld_date)
+
+        yield df[Columns.ALL]
 
     def parse_ld_date(self, date_str):
         setlocale(LC_ALL, "de_DE")
@@ -55,7 +54,7 @@ class PTRReader(Reader):
         df[Columns.DATE] = df[Columns.DATE].apply(self.parse_cha_data)
         df[Columns.REGION] = df[Columns.REGION].apply(self.parse_ptr_regions)
 
-        yield df
+        yield df[Columns.ALL]
 
     def parse_cha_data(data):
         return(
