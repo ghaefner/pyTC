@@ -24,3 +24,9 @@ class ColumnMap:
     "MARKE": Columns.PRODUCT,
     "Verkauf 1.000 Euro": Columns.VALUE
 }
+    PTR_REGIO = {
+        "KL3_LEV4": Columns.REGION,
+        "BRANDS": Columns.PRODUCT,
+        "Verkauf Euro 000": Columns.VALUE,
+        "Relativer Monat": Columns.DATE
+    }
