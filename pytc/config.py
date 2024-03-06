@@ -22,7 +22,8 @@ class ColumnMap:
     "Geography": Columns.REGION,
     "Product": Columns.MARKET,
     "MARKE": Columns.PRODUCT,
-    "Verkauf 1.000 Euro": Columns.VALUE
+    "Verkauf 1.000 Euro": Columns.VALUE,
+    "Time": Columns.DATE
 }
     PTR_REGIO = {
         "KL3_LEV4": Columns.REGION,

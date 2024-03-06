@@ -22,7 +22,7 @@ class UnifyReader(Reader):
         log.info(f"Reading file {self.file_path}.")
 
         df = pd.read_excel(self.file_path)
-        df[Columns.DATE] = df["Time"].apply(self.parse_ld_date)
+        df[Columns.DATE] = df[Columns.DATE].apply(self.parse_ld_date)
         df = apply_column_map(df, ColumnMap.LD)
         df.drop(columns=set(df.columns) - set(vars(Columns).values()), inplace=True, errors="ignore")
         
@@ -64,6 +64,7 @@ class PTRReader(Reader):
         )
 
     def parse_cha_date(date_str):
+        setlocale(LC_ALL, "de_DE")
         if "MAT" in date_str or "YTD":
             return datetime.strptime(date_str[4:], "%m/%y")
         else:
