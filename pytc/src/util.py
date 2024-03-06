@@ -1,6 +1,7 @@
 import os
 import re
 import pandas as pd
+from pytc.config import Columns
 
 def skip_rows(df, n_rows):
     """
@@ -142,3 +143,8 @@ def purge_path(path, extension='.csv'):
     for file in [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]:
         if file.endswith(extension):
             os.remove(os.path.join(path, file))
+
+def apply_column_map(df:pd.DataFrame, column_map: dict) -> pd.DataFrame:
+    df.rename(columns=column_map, inplace=True)
+    df[Columns.METRIC] = "KEUR"
+    return df
