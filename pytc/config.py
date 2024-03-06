@@ -18,7 +18,6 @@ class Table:
 
 
 class ColumnMap:
-
     LD = {
     "Geography": Columns.REGION,
     "Product": Columns.MARKET,
