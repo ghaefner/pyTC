@@ -3,6 +3,8 @@ import pandas as pd
 from locale import setlocale, LC_ALL
 from abc import ABC, abstractmethod
 import logging as log
+from openpyxl import load_workbook
+from pytc.src.util import apply_column_map, skip_incomplete_rows, use_first_row_as_header
 
 from pytc.config import Columns, ColumnMap, Config
 
@@ -21,9 +23,7 @@ class UnifyReader(Reader):
 
         df = pd.read_excel(self.file_path)
         df[Columns.DATE] = df["Time"].apply(self.parse_ld_date)
-        df.rename(columns=ColumnMap.LD, inplace=True)
-        df[Columns.METRIC] = "KEUR"
-    
+        df = apply_column_map(df, ColumnMap.LD)
         df.drop(columns=set(df.columns) - set(vars(Columns).values()), inplace=True, errors="ignore")
         
         yield df
@@ -42,6 +42,34 @@ class PTRReader(Reader):
     def read(self):
         log.info(f"Reading file {self.file_path}.")
 
-        df = pd.read_excel(self.file_path, skiprows=4)
+        wb = load_workbook(self.file_path, data_only=True)
+        sheet = wb.active
+
+        # Extract market
+        selected_market = sheet["A2"].value.split(" = ")[1].strip()
+
+        df = pd.read_excel(self.file_path)
+        df = self.parse_cha_data(df)
+        df = apply_column_map(df, ColumnMap.PTR_REGIO)
+        df[Columns.MARKET] = selected_market
+        df[Columns.DATE] = df[Columns.DATE].apply(self.parse_cha_data)
+        df[Columns.REGION] = df[Columns.REGION].apply(self.parse_ptr_regions)
 
         yield df
+
+    def parse_cha_data(data):
+        return(
+            data.pipe(skip_incomplete_rows)
+            .pipe(use_first_row_as_header)
+        )
+
+    def parse_cha_date(date_str):
+        if "MAT" in date_str or "YTD":
+            return datetime.strptime(date_str[4:], "%m/%y")
+        else:
+            return datetime.strptime(date_str, "%b %y")
+
+    
+    def parse_ptr_regions(subregion_int):
+        region_int = ( subregion_int // 100 )*100 + (subregion_int % 10)
+        return "Geb_" + str(region_int)
