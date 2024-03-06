@@ -12,6 +12,7 @@ class Columns:
     DATE = "date"
     METRIC = "metric"
     VALUE = "value"
+    ALL = [MARKET, PRODUCT, REGION, DATE, METRIC, VALUE]
 
 class Table:
     TRANSACTION = "facts"
