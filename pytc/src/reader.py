@@ -65,7 +65,7 @@ def parse_cha_data(data):
 
 def parse_cha_date(date_str):
     setlocale(LC_ALL, "de_DE")
-    if "MAT" in date_str or "YTD":
+    if "MAT" in date_str or "YTD" in date_str:
         return datetime.strptime(date_str[4:], "%m/%y")
     else:
         return datetime.strptime(date_str, "%b %y")
