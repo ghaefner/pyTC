@@ -1,8 +1,8 @@
 
 class Config:
     # TODO (later): add main path for data and subdirectories for different readers (Unify, dm, etc.)
-    # PATH_TO_DATA ="pytc/data/Example_Unify.xlsx"
-    PATH_TO_DATA ="pytc/data/Example_ptr_regio.xlsx"
+    PATH_TO_DATA ="pytc/data/Example_Unify.xlsx"
+    # PATH_TO_DATA ="pytc/data/Example_ptr_regio.xlsx"
     PATH_TO_OUTPUT = "pytc/output/"
 
 
@@ -13,6 +13,7 @@ class Columns:
     DATE = "date"
     METRIC = "metric"
     VALUE = "value"
+    SEP = "_"
     ALL = [MARKET, PRODUCT, REGION, DATE, METRIC, VALUE]
 
 class Table:
