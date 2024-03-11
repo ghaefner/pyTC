@@ -4,6 +4,8 @@ from pytc.src.writer import Writer
 from typing import Callable, List
 import logging
 from time import perf_counter
+from pytc.config import Columns
+from pandas import melt,to_numeric
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -45,7 +47,17 @@ class Model:
             )
             self.writer.write(data, task.table)
 
+def calculate_share(df, columns=Columns.ALL):
+    
+    if Columns.MARKET not in df.columns:
+        raise KeyError("No market in dataframe present. Cannot calculate share.")
+    
+    columns_exl_product = [ col for col in columns if col not in [Columns.PRODUCT, Columns.VALUE] ]
+    df[Columns.MARKET+Columns.SEP+Columns.VALUE] = df.groupby(columns_exl_product)[Columns.VALUE].transform('sum')
+    df['share'] = df[Columns.VALUE] / df[Columns.MARKET+Columns.SEP+Columns.VALUE]
 
-
-def dummy(df):
-    return df
+    df_long = melt(df, id_vars = [ col for col in columns if col not in [Columns.VALUE]],
+                   value_vars = [ Columns.VALUE, 'share'],
+                   var_name = 'type', value_name = Columns.VALUE )
+    
+    return df_long
