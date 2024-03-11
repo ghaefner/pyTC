@@ -63,7 +63,7 @@ def parse_cha_data(data):
         .pipe(use_first_row_as_header)
     )
 
-def parse_cha_date(self, date_str):
+def parse_cha_date(date_str):
     setlocale(LC_ALL, "de_DE")
     if "MAT" in date_str or "YTD":
         return datetime.strptime(date_str[4:], "%m/%y")
@@ -71,6 +71,6 @@ def parse_cha_date(self, date_str):
         return datetime.strptime(date_str, "%b %y")
 
     
-def parse_ptr_regions(self,subregion_int):
+def parse_ptr_regions(subregion_int):
     region_int = ( subregion_int // 100 )*100 + (subregion_int % 10)
     return "Geb_" + str(region_int)
