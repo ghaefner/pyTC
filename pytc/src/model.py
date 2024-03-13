@@ -1,18 +1,18 @@
 from dataclasses import dataclass
 from pytc.src.reader import Reader
 from pytc.src.writer import Writer
-from typing import Callable, List
+from typing import Callable, List, Optional
 import logging
 from time import perf_counter
 from pytc.config import Columns
-from pandas import melt,to_numeric
+from pandas import concat
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
 @dataclass
 class Task:
-    source: str
+    source: Optional[str]
     func: Callable
     table: str
 
@@ -53,11 +53,14 @@ def calculate_share(df, columns=Columns.ALL):
         raise KeyError("No market in dataframe present. Cannot calculate share.")
     
     columns_exl_product = [ col for col in columns if col not in [Columns.PRODUCT, Columns.VALUE] ]
-    df[Columns.MARKET+Columns.SEP+Columns.VALUE] = df.groupby(columns_exl_product)[Columns.VALUE].transform('sum')
-    df['share'] = df[Columns.VALUE] / df[Columns.MARKET+Columns.SEP+Columns.VALUE]
+    df[Columns.MARKET+Columns.VALUE] = df.groupby(columns_exl_product)[Columns.VALUE].transform('sum')
+    df['share'] = df[Columns.VALUE] / df[Columns.MARKET+Columns.VALUE]
 
-    df_long = melt(df, id_vars = [ col for col in columns if col not in [Columns.VALUE]],
-                   value_vars = [ Columns.VALUE, 'share'],
-                   var_name = 'type', value_name = Columns.VALUE )
-    
-    return df_long
+    df_long = []
+    for metric_type in [Columns.VALUE, Columns.MARKET+Columns.VALUE, 'share']:
+        cols = [ col for sublist in [ [ col for col in Columns.ALL if col is not Columns.VALUE ], [ metric_type ] ] for col in sublist ]
+        subset_df = df[cols].rename(columns={metric_type: Columns.VALUE})
+        subset_df[Columns.METRIC] = subset_df[Columns.METRIC] + "_" + metric_type if metric_type != Columns.VALUE else subset_df[Columns.METRIC]
+        df_long.append(subset_df)
+        
+    return concat(df_long)
