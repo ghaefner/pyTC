@@ -150,5 +150,5 @@ def apply_column_map(df:pd.DataFrame, column_map: dict) -> pd.DataFrame:
     return df
 
 def convert_value_to_num(df):
-    df[Columns] = pd.to_numeric(df[Columns.VALUE], errors='coerce')
+    df[Columns.VALUE] = pd.to_numeric(df[Columns.VALUE], errors='coerce')
     return df
