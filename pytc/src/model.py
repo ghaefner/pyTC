@@ -57,7 +57,7 @@ def calculate_share(df, columns=Columns.ALL):
     df['share'] = df[Columns.VALUE] / df[Columns.MARKET+Columns.VALUE]
 
     df_long = []
-    for metric_type in [Columns.VALUE, Columns.MARKET+Columns.VALUE, 'share']:
+    for metric_type in [Columns.VALUE, 'share']:
         cols = [ col for sublist in [ [ col for col in Columns.ALL if col is not Columns.VALUE ], [ metric_type ] ] for col in sublist ]
         subset_df = df[cols].rename(columns={metric_type: Columns.VALUE})
         subset_df[Columns.METRIC] = subset_df[Columns.METRIC] + "_" + metric_type if metric_type != Columns.VALUE else subset_df[Columns.METRIC]
