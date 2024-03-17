@@ -152,3 +152,32 @@ def apply_column_map(df:pd.DataFrame, column_map: dict) -> pd.DataFrame:
 def convert_value_to_num(df):
     df[Columns.VALUE] = pd.to_numeric(df[Columns.VALUE], errors='coerce')
     return df
+
+def filter_complete_time_series(df):
+    """
+    Filters complete time series for each group of 'market', 'metric', 'product', and 'region'.
+
+    Parameters:
+        df (DataFrame): Input DataFrame.
+        expected_length (int): Expected length of the time series.
+
+    Returns:
+        DataFrame: DataFrame with complete time series for each group.
+    """
+    # Convert 'date' column to datetime
+    df['date'] = pd.to_datetime(df['date'])
+    expected_length = df['date'].nunique()
+
+    # Group by 'market', 'metric', 'product', and 'region'
+    groups = df.groupby(['market', 'metric', 'product', 'region'])
+
+    # Filter groups where the length of the time series is equal to the expected length
+    complete_groups = [group for _, group in groups if len(group) == expected_length]
+
+    # Concatenate the filtered groups into a new DataFrame
+    complete_df = pd.concat(complete_groups)
+
+    # Reset the index and drop the additional index column
+    complete_df.reset_index(drop=True, inplace=True)
+
+    return complete_df
