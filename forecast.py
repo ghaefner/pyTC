@@ -3,53 +3,76 @@ from itertools import combinations
 from sklearn.linear_model import LinearRegression
 import numpy as np
 from pytc.config import Columns
+import statsmodels.api as sm
+from pytc.src.util import filter_complete_time_series
+
 
 df = pd.read_csv("pytc/output/facts.csv")
+
+df = filter_complete_time_series(df)
 
 TARGET_PRODUCT = "TAXOFIT"
 TARGET_REGION = "NRW"
 N_MAX = 2
+N_MIN = 2
 
-grouped_df = df.groupby([Columns.MARKET, Columns.METRIC])
-
-for name, group in grouped_df:
-    filtered_group = group[(group[Columns.PRODUCT]==TARGET_PRODUCT) & (group[Columns.REGION]==TARGET_REGION)]
+def perform_regression(data, target_region, target_product, n_min, n_max):
+    # Filter data for target product
+    filtered_data = data[data['product'] == target_product]
     
-    if filtered_group.empty:
-        continue
-
-    product_time_series = group[Columns.VALUE].tolist()
-
-    # Select N_MAX number of other regions for correlation analysis
-    other_regions = list(set(group[Columns.REGION]) - {TARGET_REGION})
-    predictor_regions = list(combinations(other_regions, N_MAX))
-
-    for predictor_region_combination in predictor_regions:
-        predictor_regions_data = []
-        max_length = max(len(df[(df['region'] == region) & (df['market'] == name[0]) & (df['metric'] == name[1])]['value'].tolist()) for region in predictor_region_combination)
-        for region in predictor_region_combination:
-            region_data = df[(df[Columns.REGION] == region) & (df[Columns.MARKET] == name[0]) & (df[Columns.METRIC] == name[1])][Columns.VALUE].tolist()
-            # Pad or truncate the time series data to ensure uniform length
-            region_data = region_data[:max_length] + [np.nan] * (max_length - len(region_data))
-            predictor_regions_data.append(region_data)
-
-    # Convert the time series data for each region into numpy arrays
-    predictor_regions_data = [np.array(region_data) for region_data in predictor_regions_data]
+    # Group data by market and metric
+    grouped_data = filtered_data.groupby(['market', 'metric'])
     
-    # Concatenate the numpy arrays to create the predictor regions data
-    predictor_regions_data = np.vstack(predictor_regions_data)
+    # Dictionary to store results
+    results = {}
     
-    # Calculate correlation between the target region and predictor regions
-    correlation_matrix = np.corrcoef(product_time_series, predictor_regions_data)
-    correlation_coefficient = correlation_matrix[0, 1:]
-
-    print(correlation_coefficient)
+    # Iterate over groups
+    for group, group_data in grouped_data:
+        market, metric = group
         
-    # print(f"Market: {name[0]}, Metric: {name[1]}, Predictor Regions: {predictor_region_combination}, Correlation Coefficients: {correlation_coefficient}")
+        # Select relevant columns for regression
+        cols = ['date', 'region', 'value']
+        group_data = group_data[cols]
+        
+        print(group_data)
+        # Filter out regions with incomplete time series
+        complete_regions = group_data['region'].value_counts()[group_data['region'].value_counts() >= len(group_data['date'].unique())].index.tolist()
+        print(complete_regions)
+        # Generate combinations of regions
+        for n in range(n_min, n_max + 1):
+            region_combinations = [comb for comb in combinations(complete_regions, n)]
+        
+            # Perform regression for each combination
+            for region_combination in region_combinations:
+                # Filter data for the selected regions
+                reg_data = group_data[group_data['region'].isin(region_combination)]
+                
+                # Check for and remove duplicate entries
+                reg_data = reg_data.drop_duplicates(subset=['date', 'region'], keep='first')
+                
+                # Pivot data for regression
+                pivot_data = reg_data.pivot(index='date', columns='region', values='value').dropna()
+                
+                # Check if enough data points are available for regression
+                if len(pivot_data) >= 2:
+                    # Add constant for regression
+                    pivot_data = sm.add_constant(pivot_data)
+                    
+                    # Fit regression model
+                    model = sm.OLS(pivot_data[target_region], pivot_data.drop(columns=[target_region]))
+                    result = model.fit()
+                    
+                    # Store results
+                    results[(market, metric, region_combination)] = result
+                    
+    return results
 
-    # Create a forecast of the TARGET_REGION based on the predictor regions (Example using linear regression)
-    # model = LinearRegression()
-    # model.fit(predictor_regions_data, product_time_series)
-    # forecast = model.predict(predictor_regions_data)
 
-    
+reg_results = perform_regression(data=df, target_region=TARGET_REGION, target_product=TARGET_PRODUCT, n_min=N_MIN, n_max=N_MAX)
+
+for key, result in reg_results.items():
+    print("Market:", key[0])
+    print("Metric:", key[1])
+    print("Regions:", key[2])
+    print(result.summary())
+    print("\n")
