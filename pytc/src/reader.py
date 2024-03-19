@@ -16,7 +16,7 @@ class Reader(ABC):
 class UnifyReader(Reader):
     def __init__(self, config=Config):
         self.config = config
-        self.file_path = self.config.PATH_TO_DATA
+        self.file_path = self.config.PATH_TO_DATA + "Example_Unify" + ".xlsx"
     
     def read(self):
         log.info(f"Reading file {self.file_path}.")
@@ -36,7 +36,7 @@ class UnifyReader(Reader):
 
 class PTRReader(Reader):
     def __init__(self, config=Config):
-        self.file_path = config.PATH_TO_DATA
+        self.file_path = config.PATH_TO_DATA + "Example_ptr_region" + ".xlsx"
 
     def read(self):
         log.info(f"Reading file {self.file_path}.")
