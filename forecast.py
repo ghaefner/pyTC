@@ -1,10 +1,9 @@
 import pandas as pd
 from itertools import combinations
-from sklearn.linear_model import LinearRegression
 import numpy as np
 from pytc.config import Columns
-import statsmodels.api as sm
 from pytc.src.util import filter_complete_time_series
+from pytc.src.model import linear_regression_results
 
 
 df = pd.read_csv("pytc/output/facts.csv")
@@ -39,8 +38,5 @@ for group, group_data in grouped_data:
             X = df[list(region_comb)].values.reshape(-1, len(region_comb))
             y = df[TARGET_REGION].values
 
-            model = LinearRegression()
-            model.fit(X, y)
-            # Print the coefficients
-            print('Intercept:', model.intercept_)
-            print('Coefficient:', model.coef_[0])
+            res = linear_regression_results(X,y,region_comb)
+            print(res)
