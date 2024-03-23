@@ -6,6 +6,9 @@ import logging
 from time import perf_counter
 from pytc.config import Columns
 from pandas import concat
+from sklearn.linear_model import LinearRegression
+from statsmodels.api import add_constant, OLS 
+from pandas import DataFrame
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -64,3 +67,20 @@ def calculate_share(df, columns=Columns.ALL):
         df_long.append(subset_df)
         
     return concat(df_long)
+
+
+def linear_regression_results(X, y, region_comb):
+    # Fit the linear regression model
+    model = LinearRegression().fit(X, y)
+
+    # Calculate p-values
+    X_with_const = add_constant(X)
+    model_ols = OLS(y, X_with_const).fit()
+    p_values = model_ols.pvalues[1:]
+
+    # Create a DataFrame with coefficients and p-values
+    results = DataFrame({'Coefficient': [*model.coef_, model.intercept_],
+                            'P-value': [*p_values, model_ols.pvalues[0]]},
+                           index=[*region_comb, "Intercept"])
+
+    return results
