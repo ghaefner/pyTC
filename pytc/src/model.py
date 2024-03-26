@@ -93,9 +93,9 @@ def run_linear_model(df, config=Config.Model):
     config.TEST_PERIOD = [ to_datetime(date_str) for date_str in config.TEST_PERIOD ]
 
     df['period'] = select([df[Columns.DATE] < min(config.TEST_PERIOD), df[Columns.DATE] > max(config.TEST_PERIOD)], ['Pre', 'Post'], default='Test')
-
+    filtered_data = df[(df[Columns.PRODUCT] == config.TARGET_PRODUCT) & (df['period']=='Pre')]
+    
     for tgt_region in config.TARGET_REGION:
-        filtered_data = df[(df[Columns.PRODUCT] == config.TARGET_PRODUCT) & (df['period']=='Pre')]
 
         grouped_data = filtered_data.groupby([Columns.MARKET, Columns.METRIC])
 
