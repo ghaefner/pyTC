@@ -4,6 +4,13 @@ class Config:
     PATH_TO_DATA ="pytc/data/"
     PATH_TO_OUTPUT = "pytc/output/"
 
+    class Model:
+        TARGET_PRODUCT = "TAXOFIT"
+        TARGET_REGION = ["NRW", "BAY"]
+        N_MAX = 2
+        N_MIN = 2
+        TEST_PERIOD = ["2023-11-01", "2023-12-01"]
+
 
 class Columns:
     MARKET = "market"
