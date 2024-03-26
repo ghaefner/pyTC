@@ -4,11 +4,12 @@ from pytc.src.writer import Writer
 from typing import Callable, List, Optional
 import logging
 from time import perf_counter
-from pytc.config import Columns
-from pandas import concat
+from pytc.config import Columns, Config
+from pandas import concat, to_datetime, DataFrame
 from sklearn.linear_model import LinearRegression
 from statsmodels.api import add_constant, OLS 
-from pandas import DataFrame
+from numpy import select
+from itertools import combinations
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -84,3 +85,35 @@ def linear_regression_results(X, y, region_comb):
                            index=[*region_comb, "Intercept"])
 
     return results
+
+
+def run_linear_model(df, config=Config):
+    
+    df[Columns.DATE] = to_datetime(df[Columns.DATE])
+    config.TEST_PERIOD = [ to_datetime(date_str) for date_str in config.TEST_PERIOD ]
+
+    df['period'] = select(df[Columns.DATE] < min(config.TEST_PERIOD), df[Columns.DATE] > max(config.TEST_PERIOD), ['Pre', 'Post'], default='Test')
+
+    for tgt_region in config.TARGET_REGION:
+        filtered_data = df[(df['product'] == config.TARGET_PRODUCT) & (df['period']=='Pre')]
+
+        grouped_data = filtered_data.groupby(['market', 'metric'])
+
+        for group, group_data in grouped_data:
+            market, metric = group
+            cols = ['date', 'region', 'value']
+        
+            df = group_data[cols].pivot_table(index='date', columns='region', values='value', aggfunc='first').reset_index()
+        
+            complete_regions = group_data['region'].value_counts()[group_data['region'].value_counts() >= len(group_data['date'].unique())].index.tolist()
+
+            for n in range(config.N_MIN,config.N_MAX+1):
+                region_combinations = [comb for comb in combinations(complete_regions, n)]
+
+                for region_comb in region_combinations:
+                    # Perform linear regression
+                    X = df[list(region_comb)].values.reshape(-1, len(region_comb))
+                    y = df[tgt_region].values
+
+                    res = linear_regression_results(X,y,region_comb)
+                    print(res)
