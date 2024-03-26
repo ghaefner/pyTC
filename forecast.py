@@ -4,7 +4,7 @@ import numpy as np
 from pytc.config import Columns
 from pytc.src.util import filter_complete_time_series
 from pytc.src.model import linear_regression_results
-
+from datetime import datetime
 
 df = pd.read_csv("pytc/output/facts.csv")
 
@@ -14,11 +14,12 @@ TARGET_PRODUCT = "TAXOFIT"
 TARGET_REGION = "NRW"
 N_MAX = 2
 N_MIN = 2
+TEST_PERIOD = [datetime(2024, 11, 1), datetime(2024, 12, 23)]
 
+df['date'] = pd.to_datetime(df['date'])
+df['period'] = np.select([df['date'] < min(TEST_PERIOD), df['date'] > max(TEST_PERIOD)], ['Pre', 'Post'], default='Test')
 
-filtered_data = df[df['product'] == TARGET_PRODUCT]
-
-print(filtered_data)
+filtered_data = df[(df['product'] == TARGET_PRODUCT) & (df['period']=='Pre')]
 
 grouped_data = filtered_data.groupby(['market', 'metric'])
 
