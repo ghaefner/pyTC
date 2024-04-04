@@ -24,6 +24,7 @@ class Columns:
 
 class Table:
     TRANSACTION = "facts"
+    MODEL = "model"
 
 
 class ColumnMap:
