@@ -70,7 +70,7 @@ def calculate_share(df, columns=Columns.ALL):
     return concat(df_long)
 
 
-def linear_regression_results(X, y, region_comb):
+def linear_regression_results(X, y, region_comb, tgt_region):
     # Fit the linear regression model
     model = LinearRegression().fit(X, y)
 
@@ -85,7 +85,7 @@ def linear_regression_results(X, y, region_comb):
                             'Region': [*region_comb, "Intercept"]}
                            )
     
-    results['Model'] = results['Region'].apply(lambda x: ' + '.join(region_comb) + ' + Intercept')
+    results['Model'] = tgt_region + ' ~ ' + results['Region'].apply(lambda x: ' + '.join(region_comb) + ' + Intercept')
 
     return results
 
@@ -119,6 +119,6 @@ def run_linear_model(df, config=Config.Model):
                     X = df[list(region_comb)].values.reshape(-1, len(region_comb))
                     y = df[tgt_region].values
 
-                    results.append(linear_regression_results(X,y,region_comb))
+                    results.append(linear_regression_results(X,y,region_comb, tgt_region))
 
     return results 
