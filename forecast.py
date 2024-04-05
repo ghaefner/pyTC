@@ -9,4 +9,6 @@ from datetime import datetime
 df = pd.read_csv("pytc/output/facts.csv")
 
 
-run_linear_model(df=df)
+res = run_linear_model(df=df)
+
+print(res[0])

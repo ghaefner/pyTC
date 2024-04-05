@@ -89,6 +89,8 @@ def linear_regression_results(X, y, region_comb):
 
 def run_linear_model(df, config=Config.Model):
     
+    results = []
+
     df[Columns.DATE] = to_datetime(df[Columns.DATE])
     config.TEST_PERIOD = [ to_datetime(date_str) for date_str in config.TEST_PERIOD ]
 
@@ -114,5 +116,6 @@ def run_linear_model(df, config=Config.Model):
                     X = df[list(region_comb)].values.reshape(-1, len(region_comb))
                     y = df[tgt_region].values
 
-                    res = linear_regression_results(X,y,region_comb)
-                    print(res)
+                    results.append(linear_regression_results(X,y,region_comb))
+
+    return results 
