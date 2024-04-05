@@ -121,4 +121,4 @@ def run_linear_model(df, config=Config.Model):
 
                     results.append(linear_regression_results(X,y,region_comb, tgt_region))
 
-    return results 
+    return concat(results, ignore_index=True) 
