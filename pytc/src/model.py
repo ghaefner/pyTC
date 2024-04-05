@@ -81,8 +81,11 @@ def linear_regression_results(X, y, region_comb):
 
     # Create a DataFrame with coefficients and p-values
     results = DataFrame({'Coefficient': [*model.coef_, model.intercept_],
-                            'P-value': [*p_values, model_ols.pvalues[0]]},
-                           index=[*region_comb, "Intercept"])
+                            'P-value': [*p_values, model_ols.pvalues[0]],
+                            'Region': [*region_comb, "Intercept"]}
+                           )
+    
+    results['Model'] = results['Region'].apply(lambda x: ' + '.join(region_comb) + ' + Intercept')
 
     return results
 
