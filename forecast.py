@@ -8,7 +8,6 @@ from datetime import datetime
 
 df = pd.read_csv("pytc/output/facts.csv")
 
-
 res = run_linear_model(df=df)
 
-print(res[0])
+print(res.head())
