@@ -7,6 +7,7 @@ from time import perf_counter
 from pytc.config import Columns, Config
 from pandas import concat, to_datetime, DataFrame
 from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
 from statsmodels.api import add_constant, OLS 
 from numpy import select
 from itertools import combinations
@@ -79,6 +80,7 @@ def linear_regression_results(X, y, region_comb, tgt_region):
     model_ols = OLS(y, X_with_const).fit()
     p_values = model_ols.pvalues[1:]
 
+    
     # Create a DataFrame with coefficients and p-values
     results = DataFrame({'Coefficient': [*model.coef_, model.intercept_],
                             'P-value': [*p_values, model_ols.pvalues[0]],
@@ -107,7 +109,7 @@ def run_linear_model(df, config=Config.Model):
         for _, group_data in grouped_data:
             cols = [Columns.DATE, Columns.REGION, Columns.VALUE]
         
-            df = group_data[cols].pivot_table(index=Columns.DATE, columns=Columns.REGION, values=Columns.VALUE, aggfunc='first').reset_index()
+            df_pivot = group_data[cols].pivot_table(index=Columns.DATE, columns=Columns.REGION, values=Columns.VALUE, aggfunc='first').reset_index()
         
             complete_regions = group_data[Columns.REGION].value_counts()[group_data[Columns.REGION].value_counts() >= len(group_data[Columns.DATE].unique())].index.tolist()
 
@@ -116,9 +118,33 @@ def run_linear_model(df, config=Config.Model):
 
                 for region_comb in region_combinations:
                     # Perform linear regression
-                    X = df[list(region_comb)].values.reshape(-1, len(region_comb))
-                    y = df[tgt_region].values
+                    X = df_pivot[list(region_comb)].values.reshape(-1, len(region_comb))
+                    y = df_pivot[tgt_region].values
 
-                    results.append(linear_regression_results(X,y,region_comb, tgt_region))
+                    model = LinearRegression().fit(X,y)
+                    # results.append(linear_regression_results(X,y,region_comb, tgt_region))
+                    # Make predictions
+                    X_test = df[df['period'] == 'Test'][list(region_comb)].values
+                    y_test_actual = df[df['period'] == 'Test'][tgt_region].values
+                    y_test_pred = model.predict(X_test)
 
-    return concat(results, ignore_index=True) 
+                    X_post = df[df['period'] == 'Post'][list(region_comb)].values
+                    y_post_actual = df[df['period'] == 'Post'][tgt_region].values
+                    y_post_pred = model.predict(X_post)
+
+                    # Evaluate model performance
+                    test_rmse = mean_squared_error(y_test_actual, y_test_pred, squared=False)
+                    post_rmse = mean_squared_error(y_post_actual, y_post_pred, squared=False)
+
+                    # Store results
+                    result = {
+                        'Region_Combination': '+'.join(region_comb),
+                        'Target_Region': tgt_region,
+                        # 'Period_Type': period_type,
+                        'Test_RMSE': test_rmse,
+                        'Post_RMSE': post_rmse
+                    }
+                    results.append(result)
+
+    # return concat(results, ignore_index=True) 
+    return DataFrame(results)
