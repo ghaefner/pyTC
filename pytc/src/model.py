@@ -99,18 +99,19 @@ def run_linear_model(df, config=Config.Model):
     df[Columns.DATE] = to_datetime(df[Columns.DATE])
     config.TEST_PERIOD = [ to_datetime(date_str) for date_str in config.TEST_PERIOD ]
 
-    df['period'] = select([df[Columns.DATE] < min(config.TEST_PERIOD), df[Columns.DATE] > max(config.TEST_PERIOD)], ['Pre', 'Post'], default='Test')
-    filtered_data = df[(df[Columns.PRODUCT] == config.TARGET_PRODUCT) & (df['period']=='Pre')]
-    
+    df = df[df[Columns.PRODUCT] == config.TARGET_PRODUCT]
+
     for tgt_region in config.TARGET_REGION:
 
-        grouped_data = filtered_data.groupby([Columns.MARKET, Columns.METRIC])
+        grouped_data = df.groupby([Columns.MARKET, Columns.METRIC])
 
         for _, group_data in grouped_data:
             cols = [Columns.DATE, Columns.REGION, Columns.VALUE]
         
             df_pivot = group_data[cols].pivot_table(index=Columns.DATE, columns=Columns.REGION, values=Columns.VALUE, aggfunc='first').reset_index()
-        
+            df_pivot['period'] = select([df_pivot[Columns.DATE] < min(config.TEST_PERIOD), df_pivot[Columns.DATE] > max(config.TEST_PERIOD)], ['Pre', 'Post'], default='Test')
+    
+
             complete_regions = group_data[Columns.REGION].value_counts()[group_data[Columns.REGION].value_counts() >= len(group_data[Columns.DATE].unique())].index.tolist()
 
             for n in range(config.N_MIN,config.N_MAX+1):
@@ -118,31 +119,31 @@ def run_linear_model(df, config=Config.Model):
 
                 for region_comb in region_combinations:
                     # Perform linear regression
-                    X = df_pivot[list(region_comb)].values.reshape(-1, len(region_comb))
-                    y = df_pivot[tgt_region].values
+                    X_pre = df_pivot[df_pivot['period']=='Pre'][list(region_comb)].values.reshape(-1, len(region_comb))
+                    y = df_pivot[df_pivot['period']=='Pre'][tgt_region].values
 
-                    model = LinearRegression().fit(X,y)
+                    model = LinearRegression().fit(X_pre,y)
                     # results.append(linear_regression_results(X,y,region_comb, tgt_region))
                     # Make predictions
-                    X_test = df[df['period'] == 'Test'][list(region_comb)].values
-                    y_test_actual = df[df['period'] == 'Test'][tgt_region].values
+                    X_test = df_pivot[df_pivot['period']=='Test'][list(region_comb)].values.reshape(-1, len(region_comb))
+                    y_test_actual = df_pivot[df_pivot['period'] == 'Test'][tgt_region].values
                     y_test_pred = model.predict(X_test)
 
-                    X_post = df[df['period'] == 'Post'][list(region_comb)].values
-                    y_post_actual = df[df['period'] == 'Post'][tgt_region].values
-                    y_post_pred = model.predict(X_post)
+                    # X_post = df[df['period'] == 'Post'][list(region_comb)].values
+                    # y_post_actual = df[df['period'] == 'Post'][tgt_region].values
+                    # y_post_pred = model.predict(X_post)
 
                     # Evaluate model performance
                     test_rmse = mean_squared_error(y_test_actual, y_test_pred, squared=False)
-                    post_rmse = mean_squared_error(y_post_actual, y_post_pred, squared=False)
+                    # post_rmse = mean_squared_error(y_post_actual, y_post_pred, squared=False)
 
                     # Store results
                     result = {
                         'Region_Combination': '+'.join(region_comb),
                         'Target_Region': tgt_region,
                         # 'Period_Type': period_type,
-                        'Test_RMSE': test_rmse,
-                        'Post_RMSE': post_rmse
+                        'Test_RMSE': test_rmse
+                        # 'Post_RMSE': post_rmse
                     }
                     results.append(result)
 
