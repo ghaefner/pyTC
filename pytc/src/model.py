@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pytc.src.reader import Reader
 from pytc.src.writer import Writer
+from pytc.src.util import add_period_column
 from typing import Callable, List, Optional
 import logging
 from time import perf_counter
@@ -109,8 +110,8 @@ def run_linear_model(df, config=Config.Model):
             cols = [Columns.DATE, Columns.REGION, Columns.VALUE]
         
             df_pivot = group_data[cols].pivot_table(index=Columns.DATE, columns=Columns.REGION, values=Columns.VALUE, aggfunc='first').reset_index()
-            df_pivot['period'] = select([df_pivot[Columns.DATE] < min(config.TEST_PERIOD), df_pivot[Columns.DATE] > max(config.TEST_PERIOD)], ['Pre', 'Post'], default='Test')
-    
+            df_pivot = add_period_column(df_pivot, TEST_PERIOD=config.TEST_PERIOD)
+
             complete_regions = group_data[Columns.REGION].value_counts()[group_data[Columns.REGION].value_counts() >= len(group_data[Columns.DATE].unique())].index.tolist()
 
             for n in range(config.N_MIN,config.N_MAX+1):
