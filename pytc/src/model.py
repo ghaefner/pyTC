@@ -111,38 +111,31 @@ def run_linear_model(df, config=Config.Model):
             df_pivot = group_data[cols].pivot_table(index=Columns.DATE, columns=Columns.REGION, values=Columns.VALUE, aggfunc='first').reset_index()
             df_pivot['period'] = select([df_pivot[Columns.DATE] < min(config.TEST_PERIOD), df_pivot[Columns.DATE] > max(config.TEST_PERIOD)], ['Pre', 'Post'], default='Test')
     
-
             complete_regions = group_data[Columns.REGION].value_counts()[group_data[Columns.REGION].value_counts() >= len(group_data[Columns.DATE].unique())].index.tolist()
 
             for n in range(config.N_MIN,config.N_MAX+1):
                 region_combinations = [comb for comb in combinations(complete_regions, n)]
 
                 for region_comb in region_combinations:
-                    # Perform linear regression
+                    # Perform linear regression on pre period
                     X_pre = df_pivot[df_pivot['period']=='Pre'][list(region_comb)].values.reshape(-1, len(region_comb))
                     y = df_pivot[df_pivot['period']=='Pre'][tgt_region].values
-
                     model = LinearRegression().fit(X_pre,y)
-                    # results.append(linear_regression_results(X,y,region_comb, tgt_region))
-                    # Make predictions
-                    X_test = df_pivot[df_pivot['period']=='Test'][list(region_comb)].values.reshape(-1, len(region_comb))
-                    y_test_actual = df_pivot[df_pivot['period'] == 'Test'][tgt_region].values
-                    y_test_pred = model.predict(X_test)
 
-                    # X_post = df[df['period'] == 'Post'][list(region_comb)].values
-                    # y_post_actual = df[df['period'] == 'Post'][tgt_region].values
-                    # y_post_pred = model.predict(X_post)
+                    # Make predictions
+                    X = df_pivot[df_pivot['period'].isin(['Test', 'Post'])][list(region_comb)].values.reshape(-1, len(region_comb))
+                    y_act = df_pivot[df_pivot['period'].isin(['Test', 'Post'])][tgt_region].values
+                    y_pred = model.predict(X)
 
                     # Evaluate model performance
-                    test_rmse = mean_squared_error(y_test_actual, y_test_pred, squared=False)
-                    # post_rmse = mean_squared_error(y_post_actual, y_post_pred, squared=False)
+                    rmse = mean_squared_error(y_act, y_pred, squared=False)
 
                     # Store results
                     result = {
                         'Region_Combination': '+'.join(region_comb),
                         'Target_Region': tgt_region,
                         # 'Period_Type': period_type,
-                        'Test_RMSE': test_rmse
+                        'RMSE': rmse
                         # 'Post_RMSE': post_rmse
                     }
                     results.append(result)
