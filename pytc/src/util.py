@@ -181,3 +181,29 @@ def filter_complete_time_series(df):
     complete_df.reset_index(drop=True, inplace=True)
 
     return complete_df
+
+def add_period_column(df, TEST_PERIOD):
+    """
+    Add a 'period' column to the DataFrame based on specified TEST_PERIOD dates.
+
+    Parameters:
+    df (pandas.DataFrame): Input DataFrame with a 'date' column.
+    TEST_PERIOD (list of datetime.date or datetime.datetime): List of dates defining the test period.
+
+    Returns:
+    pandas.DataFrame: DataFrame with an additional 'period' column.
+    """
+    # Convert TEST_PERIOD to datetime objects (in case they are not already)
+    TEST_PERIOD = pd.to_datetime(TEST_PERIOD)
+
+    # Determine min and max dates from TEST_PERIOD
+    test_period_start = min(TEST_PERIOD)
+    test_period_end = max(TEST_PERIOD)
+
+    # Add 'period' column based on date conditions
+    df['period'] = pd.cut(df['date'], 
+                           bins=[pd.Timestamp.min, test_period_start, test_period_end, pd.Timestamp.max],
+                           labels=['pre', 'test', 'post'],
+                           right=False)
+    
+    return df
