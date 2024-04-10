@@ -201,9 +201,8 @@ def add_period_column(df, TEST_PERIOD):
     test_period_end = max(TEST_PERIOD)
 
     # Add 'period' column based on date conditions
-    df['period'] = pd.cut(df['date'], 
-                           bins=[pd.Timestamp.min, test_period_start, test_period_end, pd.Timestamp.max],
-                           labels=['pre', 'test', 'post'],
-                           right=False)
+    df['period'] = 'test'
+    df.loc[df[Columns.DATE] < test_period_start, 'period'] = 'pre'
+    df.loc[df[Columns.DATE] > test_period_end, 'period'] = 'post'
     
     return df
