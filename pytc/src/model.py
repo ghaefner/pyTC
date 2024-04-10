@@ -119,13 +119,13 @@ def run_linear_model(df, config=Config.Model):
 
                 for region_comb in region_combinations:
                     # Perform linear regression on pre period
-                    X_pre = df_pivot[df_pivot['period']=='Pre'][list(region_comb)].values.reshape(-1, len(region_comb))
-                    y = df_pivot[df_pivot['period']=='Pre'][tgt_region].values
+                    X_pre = df_pivot[df_pivot['period']=='pre'][list(region_comb)].values.reshape(-1, len(region_comb))
+                    y = df_pivot[df_pivot['period']=='pre'][tgt_region].values
                     model = LinearRegression().fit(X_pre,y)
 
                     # Make predictions
-                    X = df_pivot[df_pivot['period'].isin(['Test', 'Post'])][list(region_comb)].values.reshape(-1, len(region_comb))
-                    y_act = df_pivot[df_pivot['period'].isin(['Test', 'Post'])][tgt_region].values
+                    X = df_pivot[df_pivot['period'].isin(['test', 'post'])][list(region_comb)].values.reshape(-1, len(region_comb))
+                    y_act = df_pivot[df_pivot['period'].isin(['test', 'post'])][tgt_region].values
                     y_pred = model.predict(X)
 
                     # Evaluate model performance
