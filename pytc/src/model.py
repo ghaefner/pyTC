@@ -8,7 +8,7 @@ from time import perf_counter
 from pytc.config import Columns, Config
 from pandas import concat, to_datetime, DataFrame
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import root_mean_squared_error
 from statsmodels.api import add_constant, OLS 
 from numpy import select
 from itertools import combinations
@@ -129,7 +129,7 @@ def run_linear_model(df, config=Config.Model):
                     y_pred = model.predict(X)
 
                     # Evaluate model performance
-                    rmse = mean_squared_error(y_act, y_pred, squared=False)
+                    rmse = root_mean_squared_error(y_act, y_pred)
 
                     # Store results
                     result = {
