@@ -9,7 +9,7 @@ class Config:
         TARGET_REGION = ["NRW", "BAY"]
         N_MAX = 2
         N_MIN = 2
-        TEST_PERIOD = ["2023-11-01", "2023-12-01"]
+        TEST_PERIOD = ["2022-11-01", "2022-12-01"]
 
 
 class Columns:
