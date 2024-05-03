@@ -165,7 +165,7 @@ def filter_complete_timeseries(df, date_col='date'):
         pandas.DataFrame: Filtered DataFrame containing only groups with complete time series.
     """
     # Identify columns to use for grouping (all columns except 'date_col')
-    group_cols = [col for col in df.columns if col != date_col]
+    group_cols = [col for col in df.columns if col != date_col and col != 'value']
     
     # Group DataFrame by all other columns
     grouped = df.groupby(group_cols)
@@ -173,19 +173,21 @@ def filter_complete_timeseries(df, date_col='date'):
     filtered_dfs = []
     
     # Iterate over each group
-    for group_key, group_df in grouped:
+    for _, group_df in grouped:
         # Sort by date within each group
         group_df = group_df.sort_values(date_col)
         
         # Check if the date series is complete (i.e., no missing dates)
         date_series = group_df[date_col]
         min_date, max_date = date_series.min(), date_series.max()
-        expected_dates = pd.date_range(start=min_date, end=max_date, freq='D')
         
-        if date_series.reset_index(drop=True).equals(expected_dates):
+        n_expected_dates = len(pd.date_range(start=min_date, end=max_date, freq='MS'))
+        n_act_dates = len(date_series.unique())
+        
+        if n_expected_dates == n_act_dates:
             filtered_dfs.append(group_df)
     
-    # Concatenate all filtered DataFrames
+    # Concatenate all filtered DataFrame
     if filtered_dfs:
         filtered_df = pd.concat(filtered_dfs)
     else:
