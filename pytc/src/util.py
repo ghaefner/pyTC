@@ -153,34 +153,45 @@ def convert_value_to_num(df):
     df[Columns.VALUE] = pd.to_numeric(df[Columns.VALUE], errors='coerce')
     return df
 
-def filter_complete_time_series(df):
+def filter_complete_timeseries(df, date_col='date'):
     """
-    Filters complete time series for each group of 'market', 'metric', 'product', and 'region'.
+    Filter groups in a DataFrame based on whether they have a complete time series.
 
-    Parameters:
-        df (DataFrame): Input DataFrame.
-        expected_length (int): Expected length of the time series.
+    Args:
+        df (pandas.DataFrame): Input DataFrame.
+        date_col (str): Name of the column containing the date.
 
     Returns:
-        DataFrame: DataFrame with complete time series for each group.
+        pandas.DataFrame: Filtered DataFrame containing only groups with complete time series.
     """
-    # Convert 'date' column to datetime
-    df['date'] = pd.to_datetime(df['date'])
-    expected_length = df['date'].nunique()
+    # Identify columns to use for grouping (all columns except 'date_col')
+    group_cols = [col for col in df.columns if col != date_col]
+    
+    # Group DataFrame by all other columns
+    grouped = df.groupby(group_cols)
 
-    # Group by 'market', 'metric', 'product', and 'region'
-    groups = df.groupby(['market', 'metric', 'product', 'region'])
-
-    # Filter groups where the length of the time series is equal to the expected length
-    complete_groups = [group for _, group in groups if len(group) == expected_length]
-
-    # Concatenate the filtered groups into a new DataFrame
-    complete_df = pd.concat(complete_groups)
-
-    # Reset the index and drop the additional index column
-    complete_df.reset_index(drop=True, inplace=True)
-
-    return complete_df
+    filtered_dfs = []
+    
+    # Iterate over each group
+    for group_key, group_df in grouped:
+        # Sort by date within each group
+        group_df = group_df.sort_values(date_col)
+        
+        # Check if the date series is complete (i.e., no missing dates)
+        date_series = group_df[date_col]
+        min_date, max_date = date_series.min(), date_series.max()
+        expected_dates = pd.date_range(start=min_date, end=max_date, freq='D')
+        
+        if date_series.reset_index(drop=True).equals(expected_dates):
+            filtered_dfs.append(group_df)
+    
+    # Concatenate all filtered DataFrames
+    if filtered_dfs:
+        filtered_df = pd.concat(filtered_dfs)
+    else:
+        filtered_df = pd.DataFrame(columns=df.columns)  # Empty DataFrame if no complete groups
+    
+    return filtered_df
 
 def add_period_column(df, TEST_PERIOD):
     """
