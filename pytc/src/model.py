@@ -136,9 +136,9 @@ def run_linear_model(df, config=Config.Model):
                         'Region_Combination': '+'.join(region_comb),
                         'Target_Region': tgt_region,
                         # 'Period_Type': period_type,
-                        'RMSE': rmse
-                        # 'Post_RMSE': post_rmse
+                        'RMSE': rmse,
                     }
+                    
                     results.append(result)
 
     # return concat(results, ignore_index=True) 
